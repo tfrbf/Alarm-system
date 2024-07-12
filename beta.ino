@@ -4,6 +4,8 @@
 // Define the pins
 const int pirPin = 12; // PIR sensor output pin
 const int ledPin = 13; // LED pin
+const int ldrPin = 34; // LDR analog input pin
+const int lightThreshold = 500; // Adjust this value according to your light conditions
 
 RTC_DS3231 rtc;
 
@@ -38,8 +40,11 @@ void loop() {
   // Read the state of the PIR sensor (HIGH when motion is detected)
   int motionState = digitalRead(pirPin);
   
-  if (motionState == HIGH) {
-    // Motion detected, turn on the LED
+  // Read the value from the LDR
+  int ldrValue = analogRead(ldrPin);
+
+  if (motionState == HIGH && ldrValue > lightThreshold) {
+    // Motion detected and light level is above the threshold, turn on the LED
     digitalWrite(ledPin, HIGH);
     
     // Get the current time
@@ -56,11 +61,12 @@ void loop() {
     Serial.print(now.minute(), DEC);
     Serial.print(':');
     Serial.print(now.second(), DEC);
-    Serial.println();
+    Serial.print(" Light level: ");
+    Serial.println(ldrValue);
   } else {
-    // No motion, turn off the LED
+    // No motion or insufficient light, turn off the LED
     digitalWrite(ledPin, LOW);
-    Serial.println("No motion. LED is OFF.");
+    Serial.println("No motion or insufficient light. LED is OFF.");
   }
   
   // Small delay to avoid excessive serial prints
